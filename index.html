@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AhmadStore • Status Page</title>
 
+<meta name="theme-color" content="#818cf8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -19,10 +22,9 @@
   --secondary:#22d3ee;
   --success:#22c55e;
   --warning:#facc15;
+  --danger:#ef4444;
 }
-
 *{box-sizing:border-box;font-family:Poppins,sans-serif}
-
 body{
   margin:0;color:var(--text);
   background:
@@ -30,26 +32,14 @@ body{
     radial-gradient(600px 300px at 90% 10%,rgba(34,211,238,.12),transparent),
     var(--bg);
 }
-
-header{
-  padding:60px 20px;
-  text-align:center
-}
+header{text-align:center;padding:60px 20px}
 header h1{
-  margin:0;
-  font-size:38px;
+  margin:0;font-size:38px;
   background:linear-gradient(90deg,var(--primary),var(--secondary));
-  -webkit-background-clip:text;
-  color:transparent
+  -webkit-background-clip:text;color:transparent
 }
 header p{color:var(--muted)}
-
-.container{
-  max-width:1100px;
-  margin:auto;
-  padding:20px
-}
-
+.container{max-width:1100px;margin:auto;padding:20px}
 .card{
   background:linear-gradient(180deg,var(--glass),transparent);
   backdrop-filter:blur(10px);
@@ -57,40 +47,20 @@ header p{color:var(--muted)}
   border-radius:24px;
   padding:24px;
   margin-bottom:20px;
-  box-shadow:0 30px 80px rgba(0,0,0,.6);
-  transition:.3s
 }
-.card:hover{transform:translateY(-2px)}
-
 .status-big{text-align:center}
 .status-big h2{
-  margin:0;
-  font-size:26px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:10px
+  margin:0;font-size:26px;
+  display:flex;gap:10px;
+  justify-content:center;align-items:center
 }
-
 .badge{
   padding:6px 14px;
   border-radius:999px;
-  font-size:13px;
-  font-weight:600
+  font-size:13px;font-weight:600
 }
 .badge.ok{background:rgba(34,197,94,.15);color:var(--success)}
 .badge.warn{background:rgba(250,204,21,.15);color:var(--warning)}
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  font-weight:700
-}
-.brand img{
-  width:40px;
-  border-radius:12px
-}
 
 .input-group{
   display:flex;
@@ -106,8 +76,7 @@ input{
   background:transparent;
   color:var(--text)
 }
-
-button.primary{
+button{
   padding:16px 30px;
   border-radius:16px;
   border:none;
@@ -116,20 +85,19 @@ button.primary{
   background:linear-gradient(135deg,var(--primary),var(--secondary));
   color:#020617
 }
-
-.log{
-  margin-top:12px;
+button:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+  filter:grayscale(1);
+}
+.error{
+  margin-top:6px;
   font-size:12px;
-  color:#c7d2fe;
-  line-height:1.6
+  color:var(--danger);
+  display:none;
 }
-
-footer{
-  text-align:center;
-  color:#64748b;
-  padding:28px;
-  font-size:12px
-}
+.log{margin-top:12px;font-size:12px;color:#c7d2fe}
+footer{text-align:center;color:#64748b;padding:28px;font-size:12px}
 </style>
 </head>
 
@@ -143,21 +111,16 @@ footer{
 <div class="container">
 
   <div class="card status-big" id="globalStatus">
-    <h2>
-      🟢 All Systems Operational
-      <span class="badge ok">100%</span>
-    </h2>
-  </div>
-
-  <div class="card brand">
-    <img src="https://cdn-icons-png.flaticon.com/512/1041/1041916.png">
-    AhmadStore Network
+    <h2>🟢 All Systems Operational <span class="badge ok">100%</span></h2>
   </div>
 
   <div class="card">
     <div class="input-group">
       <input id="domainInput" placeholder="example.com">
-      <button class="primary" onclick="checkStatus()">Check Status</button>
+      <button id="checkBtn" disabled onclick="checkStatus()">Check Status</button>
+    </div>
+    <div class="error" id="errorMsg">
+      ⚠️ Masukkan domain atau URL yang valid
     </div>
   </div>
 
@@ -172,6 +135,37 @@ footer{
 <footer>© 2026 AhmadStore • Status Page</footer>
 
 <script>
+/* ======================
+   INPUT VALIDATION
+====================== */
+const domainInput = document.getElementById("domainInput");
+const checkBtn = document.getElementById("checkBtn");
+const errorMsg = document.getElementById("errorMsg");
+
+function isValidDomain(v){
+  return /^(https?:\/\/)?([a-z0-9-]+\.)+[a-z]{2,}$/i.test(v);
+}
+function normalizeURL(v){
+  if(!v.startsWith("http://") && !v.startsWith("https://")){
+    return "https://" + v;
+  }
+  return v;
+}
+
+domainInput.addEventListener("input",()=>{
+  const v = domainInput.value.trim();
+  if(v==="" || !isValidDomain(v)){
+    checkBtn.disabled = true;
+    errorMsg.style.display = v==="" ? "none" : "block";
+  }else{
+    checkBtn.disabled = false;
+    errorMsg.style.display = "none";
+  }
+});
+
+/* ======================
+   STATUS SIMULATION
+====================== */
 let chart;
 
 function initChart(){
@@ -184,14 +178,17 @@ function initChart(){
       tension:.4,
       fill:true
     }]},
-    options:{
-      plugins:{legend:{display:false}},
-      scales:{y:{min:90,max:100}}
-    }
+    options:{plugins:{legend:{display:false}},scales:{y:{min:90,max:100}}}
   });
 }
 
 function checkStatus(){
+  let url = domainInput.value.trim();
+  if(!isValidDomain(url)) return;
+
+  url = normalizeURL(url);
+  domainInput.value = url;
+
   const ok=Math.random()>0.1;
   globalStatus.innerHTML=`
     <h2>
@@ -204,7 +201,8 @@ function checkStatus(){
   chart.data.labels.push(new Date().toLocaleTimeString());
   chart.data.datasets[0].data.push(val);
   chart.update();
-  log.innerHTML+=`• ${new Date().toLocaleTimeString()} — ${val}% uptime<br>`;
+
+  log.innerHTML+=`• ${new Date().toLocaleTimeString()} — ${val}% uptime (${url})<br>`;
 }
 </script>
 
