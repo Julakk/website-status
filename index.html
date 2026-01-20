@@ -5,62 +5,86 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AhmadStore • Status Page</title>
 
-<meta name="theme-color" content="#818cf8">
-<meta name="apple-mobile-web-app-capable" content="yes">
-
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 :root{
   --bg:#020617;
-  --glass:rgba(255,255,255,.04);
-  --border:rgba(255,255,255,.08);
+  --glass:rgba(255,255,255,.06);
+  --border:rgba(255,255,255,.12);
   --text:#e5e7eb;
   --muted:#9ca3af;
-  --primary:#818cf8;
+  --primary:#8b5cf6;
   --secondary:#22d3ee;
   --success:#22c55e;
   --warning:#facc15;
   --danger:#ef4444;
+  --glow:0 0 30px rgba(139,92,246,.35);
 }
 *{box-sizing:border-box;font-family:Poppins,sans-serif}
+
 body{
   margin:0;color:var(--text);
   background:
-    radial-gradient(700px 350px at 10% -10%,rgba(129,140,248,.15),transparent),
-    radial-gradient(600px 300px at 90% 10%,rgba(34,211,238,.12),transparent),
+    radial-gradient(900px 500px at 10% -10%,rgba(139,92,246,.25),transparent),
+    radial-gradient(700px 400px at 90% 10%,rgba(34,211,238,.18),transparent),
     var(--bg);
+  animation:bgMove 18s linear infinite alternate;
 }
-header{text-align:center;padding:60px 20px}
+@keyframes bgMove{
+  from{filter:hue-rotate(0deg)}
+  to{filter:hue-rotate(15deg)}
+}
+
+header{text-align:center;padding:70px 20px}
 header h1{
-  margin:0;font-size:38px;
-  background:linear-gradient(90deg,var(--primary),var(--secondary));
-  -webkit-background-clip:text;color:transparent
+  margin:0;font-size:40px;
+  background:linear-gradient(90deg,var(--primary),var(--secondary),var(--primary));
+  background-size:200% 200%;
+  -webkit-background-clip:text;color:transparent;
+  animation:shine 6s ease infinite;
+}
+@keyframes shine{
+  0%{background-position:0%}
+  50%{background-position:100%}
+  100%{background-position:0%}
 }
 header p{color:var(--muted)}
+
 .container{max-width:1100px;margin:auto;padding:20px}
+
 .card{
-  background:linear-gradient(180deg,var(--glass),transparent);
-  backdrop-filter:blur(10px);
+  position:relative;
+  background:linear-gradient(180deg,var(--glass),rgba(255,255,255,.02));
+  backdrop-filter:blur(14px);
   border:1px solid var(--border);
-  border-radius:24px;
-  padding:24px;
-  margin-bottom:20px;
+  border-radius:26px;
+  padding:26px;
+  margin-bottom:22px;
+  box-shadow:0 30px 90px rgba(0,0,0,.55);
+  transition:.35s ease;
 }
+.card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 40px 120px rgba(0,0,0,.7),var(--glow);
+}
+
 .status-big{text-align:center}
 .status-big h2{
   margin:0;font-size:26px;
   display:flex;gap:10px;
   justify-content:center;align-items:center
 }
+
 .badge{
   padding:6px 14px;
   border-radius:999px;
-  font-size:13px;font-weight:600
+  font-size:13px;
+  font-weight:600;
 }
-.badge.ok{background:rgba(34,197,94,.15);color:var(--success)}
-.badge.warn{background:rgba(250,204,21,.15);color:var(--warning)}
+.badge.ok{background:rgba(34,197,94,.18);color:var(--success)}
+.badge.warn{background:rgba(250,204,21,.18);color:var(--warning)}
 
 .input-group{
   display:flex;
@@ -70,34 +94,62 @@ header p{color:var(--muted)}
 input{
   flex:1;
   min-width:240px;
-  padding:16px;
-  border-radius:16px;
+  padding:16px 18px;
+  border-radius:18px;
   border:1px solid var(--border);
-  background:transparent;
-  color:var(--text)
+  background:rgba(2,6,23,.6);
+  color:var(--text);
 }
+input:focus{
+  outline:none;
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(139,92,246,.25);
+}
+
 button{
-  padding:16px 30px;
-  border-radius:16px;
+  padding:16px 34px;
+  border-radius:18px;
   border:none;
   cursor:pointer;
   font-weight:700;
   background:linear-gradient(135deg,var(--primary),var(--secondary));
-  color:#020617
+  color:#020617;
 }
 button:disabled{
-  opacity:.5;
+  opacity:.45;
   cursor:not-allowed;
   filter:grayscale(1);
 }
+
 .error{
-  margin-top:6px;
+  margin-top:8px;
   font-size:12px;
   color:var(--danger);
   display:none;
 }
-.log{margin-top:12px;font-size:12px;color:#c7d2fe}
-footer{text-align:center;color:#64748b;padding:28px;font-size:12px}
+
+/* === UPTIME HISTORY === */
+.uptime-log{
+  margin-top:14px;
+  max-height:150px;
+  overflow:auto;
+  padding:14px;
+  border-radius:16px;
+  background:rgba(2,6,23,.65);
+  border:1px solid var(--border);
+  font-size:12px;
+  color:#c7d2fe;
+  line-height:1.6;
+}
+.uptime-log::-webkit-scrollbar{
+  width:6px;
+}
+.uptime-log::-webkit-scrollbar-thumb{
+  background:rgba(139,92,246,.5);
+  border-radius:999px;
+}
+
+footer{text-align:center;color:#64748b;padding:30px;font-size:12px}
 </style>
 </head>
 
@@ -105,13 +157,13 @@ footer{text-align:center;color:#64748b;padding:28px;font-size:12px}
 
 <header>
   <h1>AhmadStore Status</h1>
-  <p>Public Service Monitoring & Uptime</p>
+  <p>Public hosting status page dengan uptime history, grouping service, dan monitoring.</p>
 </header>
 
 <div class="container">
 
   <div class="card status-big" id="globalStatus">
-    <h2>🟢 All Systems Operational <span class="badge ok">100%</span></h2>
+    <h2> All Systems Operational <span class="badge ok">100%</span></h2>
   </div>
 
   <div class="card">
@@ -119,80 +171,92 @@ footer{text-align:center;color:#64748b;padding:28px;font-size:12px}
       <input id="domainInput" placeholder="example.com">
       <button id="checkBtn" disabled onclick="checkStatus()">Check Status</button>
     </div>
-    <div class="error" id="errorMsg">
-      ⚠️ Masukkan domain atau URL yang valid
-    </div>
+    <div class="error" id="errorMsg"> Masukkan domain atau URL yang valid</div>
   </div>
 
+  <!-- UPDATED UPTIME HISTORY -->
   <div class="card">
-    <h3>📊 Uptime History</h3>
-    <canvas id="uptimeChart" height="120"></canvas>
-    <div class="log" id="log"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <h3 style="margin:0"> Uptime History</h3>
+        <small style="color:var(--muted)">Latest checks & availability</small>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px">
+        <span style="width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 10px #22c55e"></span>
+        Live
+      </div>
+    </div>
+
+    <div style="margin-top:16px">
+      <canvas id="uptimeChart" height="110"></canvas>
+    </div>
+
+    <div class="uptime-log" id="log"></div>
   </div>
 
 </div>
 
-<footer>© 2026 AhmadStore • Status Page</footer>
+<footer>© 2026 AhmadStore • Magic UI Edition</footer>
 
 <script>
-/* ======================
-   INPUT VALIDATION
-====================== */
-const domainInput = document.getElementById("domainInput");
-const checkBtn = document.getElementById("checkBtn");
-const errorMsg = document.getElementById("errorMsg");
+/* INPUT VALIDATION */
+const domainInput=document.getElementById("domainInput");
+const checkBtn=document.getElementById("checkBtn");
+const errorMsg=document.getElementById("errorMsg");
 
 function isValidDomain(v){
   return /^(https?:\/\/)?([a-z0-9-]+\.)+[a-z]{2,}$/i.test(v);
 }
 function normalizeURL(v){
-  if(!v.startsWith("http://") && !v.startsWith("https://")){
-    return "https://" + v;
-  }
-  return v;
+  return v.startsWith("http") ? v : "https://" + v;
 }
 
 domainInput.addEventListener("input",()=>{
-  const v = domainInput.value.trim();
-  if(v==="" || !isValidDomain(v)){
-    checkBtn.disabled = true;
-    errorMsg.style.display = v==="" ? "none" : "block";
+  const v=domainInput.value.trim();
+  if(v===""||!isValidDomain(v)){
+    checkBtn.disabled=true;
+    errorMsg.style.display=v===""?"none":"block";
   }else{
-    checkBtn.disabled = false;
-    errorMsg.style.display = "none";
+    checkBtn.disabled=false;
+    errorMsg.style.display="none";
   }
 });
 
-/* ======================
-   STATUS SIMULATION
-====================== */
+/* CHART */
 let chart;
-
 function initChart(){
   chart=new Chart(uptimeChart,{
     type:'line',
     data:{labels:[],datasets:[{
       data:[],
       borderColor:'#22c55e',
-      backgroundColor:'rgba(34,197,94,.15)',
-      tension:.4,
-      fill:true
+      backgroundColor:'rgba(34,197,94,.2)',
+      tension:.45,
+      fill:true,
+      pointRadius:3,
+      pointHoverRadius:6
     }]},
-    options:{plugins:{legend:{display:false}},scales:{y:{min:90,max:100}}}
+    options:{
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{grid:{display:false},ticks:{color:'#9ca3af'}},
+        y:{min:90,max:100,grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'#9ca3af'}}
+      }
+    }
   });
 }
 
+/* STATUS CHECK (SIMULATED) */
 function checkStatus(){
-  let url = domainInput.value.trim();
-  if(!isValidDomain(url)) return;
-
-  url = normalizeURL(url);
-  domainInput.value = url;
+  let url=domainInput.value.trim();
+  if(!isValidDomain(url))return;
+  url=normalizeURL(url);
+  domainInput.value=url;
 
   const ok=Math.random()>0.1;
   globalStatus.innerHTML=`
     <h2>
-      ${ok?'🟢 All Systems Operational':'🟡 Partial Outage'}
+      ${ok?' All Systems Operational':' Partial Outage'}
       <span class="badge ${ok?'ok':'warn'}">${ok?'100%':'Degraded'}</span>
     </h2>`;
 
@@ -202,7 +266,9 @@ function checkStatus(){
   chart.data.datasets[0].data.push(val);
   chart.update();
 
-  log.innerHTML+=`• ${new Date().toLocaleTimeString()} — ${val}% uptime (${url})<br>`;
+  log.innerHTML =
+    `• ${new Date().toLocaleTimeString()} — ${val}% uptime (${url})<br>` +
+    log.innerHTML;
 }
 </script>
 
