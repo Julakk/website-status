@@ -30,14 +30,9 @@ body{
     radial-gradient(900px 500px at 10% -10%,rgba(139,92,246,.25),transparent),
     radial-gradient(700px 400px at 90% 10%,rgba(34,211,238,.18),transparent),
     var(--bg);
-  animation:bgMove 18s linear infinite alternate;
-}
-@keyframes bgMove{
-  from{filter:hue-rotate(0deg)}
-  to{filter:hue-rotate(15deg)}
 }
 
-header{text-align:center;padding:70px 20px}
+header{text-align:center;padding:64px 20px}
 header h1{
   margin:0;font-size:40px;
   background:linear-gradient(90deg,var(--primary),var(--secondary),var(--primary));
@@ -55,7 +50,6 @@ header p{color:var(--muted)}
 .container{max-width:1100px;margin:auto;padding:20px}
 
 .card{
-  position:relative;
   background:linear-gradient(180deg,var(--glass),rgba(255,255,255,.02));
   backdrop-filter:blur(14px);
   border:1px solid var(--border);
@@ -66,17 +60,22 @@ header p{color:var(--muted)}
   transition:.35s ease;
 }
 .card:hover{
-  transform:translateY(-4px);
+  transform:translateY(-3px);
   box-shadow:0 40px 120px rgba(0,0,0,.7),var(--glow);
 }
 
+/* GLOBAL STATUS */
 .status-big{text-align:center}
 .status-big h2{
   margin:0;font-size:26px;
   display:flex;gap:10px;
-  justify-content:center;align-items:center
+  justify-content:center;align-items:center;
+  animation:pop .4s ease;
 }
-
+@keyframes pop{
+  from{transform:scale(.95);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
 .badge{
   padding:6px 14px;
   border-radius:999px;
@@ -86,10 +85,11 @@ header p{color:var(--muted)}
 .badge.ok{background:rgba(34,197,94,.18);color:var(--success)}
 .badge.warn{background:rgba(250,204,21,.18);color:var(--warning)}
 
+/* INPUT */
 .input-group{
   display:flex;
   gap:14px;
-  flex-wrap:wrap
+  flex-wrap:wrap;
 }
 input{
   flex:1;
@@ -105,22 +105,33 @@ input:focus{
   border-color:var(--primary);
   box-shadow:0 0 0 3px rgba(139,92,246,.25);
 }
-
 button{
-  padding:16px 34px;
+  min-width:160px;
+  padding:16px 28px;
   border-radius:18px;
   border:none;
   cursor:pointer;
   font-weight:700;
   background:linear-gradient(135deg,var(--primary),var(--secondary));
   color:#020617;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
 }
 button:disabled{
   opacity:.45;
   cursor:not-allowed;
   filter:grayscale(1);
 }
-
+.spinner{
+  width:16px;height:16px;
+  border:2px solid rgba(0,0,0,.2);
+  border-top-color:#020617;
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
 .error{
   margin-top:8px;
   font-size:12px;
@@ -128,7 +139,31 @@ button:disabled{
   display:none;
 }
 
-/* === UPTIME HISTORY === */
+/* AVERAGE UPTIME */
+.avg-box{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:13px;
+  margin-top:14px;
+  margin-bottom:6px;
+  color:var(--muted);
+}
+.avg-box strong{color:var(--text)}
+.avg-bar{
+  height:8px;
+  border-radius:999px;
+  background:rgba(255,255,255,.1);
+  overflow:hidden;
+}
+.avg-bar div{
+  height:100%;
+  width:0%;
+  border-radius:999px;
+  transition:width .6s ease, background .4s ease;
+}
+
+/* UPTIME HISTORY */
 .uptime-log{
   margin-top:14px;
   max-height:150px;
@@ -141,15 +176,26 @@ button:disabled{
   color:#c7d2fe;
   line-height:1.6;
 }
-.uptime-log::-webkit-scrollbar{
-  width:6px;
-}
+.uptime-log::-webkit-scrollbar{width:6px}
 .uptime-log::-webkit-scrollbar-thumb{
   background:rgba(139,92,246,.5);
   border-radius:999px;
 }
 
-footer{text-align:center;color:#64748b;padding:30px;font-size:12px}
+.live-dot{
+  width:8px;height:8px;
+  border-radius:50%;
+  background:var(--success);
+  box-shadow:0 0 10px var(--success);
+  animation:pulse 1.5s infinite;
+}
+@keyframes pulse{
+  0%{transform:scale(1);opacity:1}
+  50%{transform:scale(1.6);opacity:.4}
+  100%{transform:scale(1);opacity:1}
+}
+
+footer{text-align:center;color:#64748b;padding:28px;font-size:12px}
 </style>
 </head>
 
@@ -163,7 +209,7 @@ footer{text-align:center;color:#64748b;padding:30px;font-size:12px}
 <div class="container">
 
   <div class="card status-big" id="globalStatus">
-    <h2> All Systems Operational <span class="badge ok">100%</span></h2>
+    <h2>🟢 All Systems Operational <span class="badge ok">100%</span></h2>
   </div>
 
   <div class="card">
@@ -171,20 +217,27 @@ footer{text-align:center;color:#64748b;padding:30px;font-size:12px}
       <input id="domainInput" placeholder="example.com">
       <button id="checkBtn" disabled onclick="checkStatus()">Check Status</button>
     </div>
-    <div class="error" id="errorMsg"> Masukkan domain atau URL yang valid</div>
+    <div class="error" id="errorMsg">⚠️ Masukkan domain atau URL yang valid</div>
   </div>
 
-  <!-- UPDATED UPTIME HISTORY -->
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center">
       <div>
-        <h3 style="margin:0"> Uptime History</h3>
+        <h3 style="margin:0">📊 Uptime History</h3>
         <small style="color:var(--muted)">Latest checks & availability</small>
       </div>
       <div style="display:flex;align-items:center;gap:6px;font-size:12px">
-        <span style="width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 10px #22c55e"></span>
-        Live
+        <span class="live-dot"></span> Live
       </div>
+    </div>
+
+    <!-- AVERAGE -->
+    <div class="avg-box">
+      <span>Average Uptime</span>
+      <strong id="avgText">–%</strong>
+    </div>
+    <div class="avg-bar">
+      <div id="avgFill"></div>
     </div>
 
     <div style="margin-top:16px">
@@ -196,19 +249,23 @@ footer{text-align:center;color:#64748b;padding:30px;font-size:12px}
 
 </div>
 
-<footer>© 2026 AhmadStore • Magic UI Edition</footer>
+<footer>© 2026 AhmadStore</footer>
 
 <script>
-/* INPUT VALIDATION */
 const domainInput=document.getElementById("domainInput");
 const checkBtn=document.getElementById("checkBtn");
 const errorMsg=document.getElementById("errorMsg");
+const avgText=document.getElementById("avgText");
+const avgFill=document.getElementById("avgFill");
+
+let chart;
+let uptimeValues=[];
 
 function isValidDomain(v){
   return /^(https?:\/\/)?([a-z0-9-]+\.)+[a-z]{2,}$/i.test(v);
 }
 function normalizeURL(v){
-  return v.startsWith("http") ? v : "https://" + v;
+  return v.startsWith("http")?v:"https://"+v;
 }
 
 domainInput.addEventListener("input",()=>{
@@ -222,8 +279,6 @@ domainInput.addEventListener("input",()=>{
   }
 });
 
-/* CHART */
-let chart;
 function initChart(){
   chart=new Chart(uptimeChart,{
     type:'line',
@@ -232,43 +287,59 @@ function initChart(){
       borderColor:'#22c55e',
       backgroundColor:'rgba(34,197,94,.2)',
       tension:.45,
-      fill:true,
-      pointRadius:3,
-      pointHoverRadius:6
+      fill:true
     }]},
     options:{
       plugins:{legend:{display:false}},
-      scales:{
-        x:{grid:{display:false},ticks:{color:'#9ca3af'}},
-        y:{min:90,max:100,grid:{color:'rgba(255,255,255,.05)'},ticks:{color:'#9ca3af'}}
-      }
+      scales:{y:{min:90,max:100}}
     }
   });
 }
 
-/* STATUS CHECK (SIMULATED) */
+function updateAverage(){
+  const avg=uptimeValues.reduce((a,b)=>a+b,0)/uptimeValues.length;
+  avgText.textContent=avg.toFixed(1)+"%";
+  avgFill.style.width=avg+"%";
+  avgFill.style.background=
+    avg>=99?"#22c55e":
+    avg>=95?"#facc15":
+    "#ef4444";
+}
+
 function checkStatus(){
   let url=domainInput.value.trim();
   if(!isValidDomain(url))return;
-  url=normalizeURL(url);
-  domainInput.value=url;
 
-  const ok=Math.random()>0.1;
-  globalStatus.innerHTML=`
-    <h2>
-      ${ok?' All Systems Operational':' Partial Outage'}
-      <span class="badge ${ok?'ok':'warn'}">${ok?'100%':'Degraded'}</span>
-    </h2>`;
+  checkBtn.disabled=true;
+  checkBtn.innerHTML=`<span class="spinner"></span> Checking...`;
 
-  if(!chart) initChart();
-  const val=Math.floor(96+Math.random()*4);
-  chart.data.labels.push(new Date().toLocaleTimeString());
-  chart.data.datasets[0].data.push(val);
-  chart.update();
+  setTimeout(()=>{
+    url=normalizeURL(url);
+    domainInput.value=url;
 
-  log.innerHTML =
-    `• ${new Date().toLocaleTimeString()} — ${val}% uptime (${url})<br>` +
-    log.innerHTML;
+    const ok=Math.random()>0.1;
+    globalStatus.innerHTML=`
+      <h2>
+        ${ok?'🟢 All Systems Operational':'🟡 Partial Outage'}
+        <span class="badge ${ok?'ok':'warn'}">${ok?'100%':'Degraded'}</span>
+      </h2>`;
+
+    if(!chart) initChart();
+    const val=Math.floor(96+Math.random()*4);
+    uptimeValues.push(val);
+    updateAverage();
+
+    chart.data.labels.push(new Date().toLocaleTimeString());
+    chart.data.datasets[0].data.push(val);
+    chart.update();
+
+    log.innerHTML=
+      `• ${new Date().toLocaleTimeString()} — ${val}% uptime (${url})<br>`+
+      log.innerHTML;
+
+    checkBtn.innerHTML="Check Status";
+    checkBtn.disabled=false;
+  },800);
 }
 </script>
 
